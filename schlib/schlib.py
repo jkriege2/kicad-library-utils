@@ -337,6 +337,18 @@ class SchLib(object):
 
         return None
 
+    # returns a component for a name, either if the component matches the name directy, or
+    # if one of the components' aliases matches the name
+    def getComponentByNameOrAlias(self, name):
+        for component in self.components:
+            if component.definition['name'] == name:
+                return component
+            for aname, a in component.aliases.items():
+                if (aname==name):
+                    return component
+
+        return None
+
     def removeComponent(self, name):
         component = self.getComponentByName(name)
         for alias in component.aliases.keys():
@@ -344,6 +356,36 @@ class SchLib(object):
         self.documentation.remove(name)
         self.components.remove(component)
         return component
+
+    # remove a component, or an alias
+    # - if name is a component that has no aliases, the component is simply removed
+    # - if name is a component with aliases, the component is renamed like the first alias
+    # - if name is an alais, the alias is simply removed from the lib
+    def removeComponentOrAlias(self, name):
+        for component in self.components:
+            if component.definition['name'] == name:
+                if (len(component.aliases)>0):
+                    (aname,a)=component.aliases.popitem()
+                    component.name = aname
+                    component.definition['name'] = aname
+                    component.fields[1]['name']=aname
+                    # get documentation
+                    try:
+                        component.documentation = self.documentation.components[aname]
+                    except KeyError:
+                        component.documentation = {}
+                    self.documentation.remove(name)
+                    return component
+                else:
+                    self.documentation.remove(name)
+                    return removeComponent(self, name)
+            for aname, a in component.aliases.items():
+                if (aname==name):
+                    component.aliases.pop(aname)
+                    self.documentation.remove(name)
+                    return component
+
+        return None
 
     def addComponent(self, component):
         if not component in self.components:
