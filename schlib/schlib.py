@@ -261,6 +261,13 @@ class Component(object):
 
         return pins
 
+    def setName(self, name):
+        self.name = aname
+        self.definition['name'] = aname
+        self.fields[1]['name'] = aname
+        self.comments='# \n# '+aname+'\n# \n'
+
+
 
 class SchLib(object):
     """
@@ -366,9 +373,7 @@ class SchLib(object):
             if component.definition['name'] == name:
                 if (len(component.aliases)>0):
                     (aname,a)=component.aliases.popitem()
-                    component.name = aname
-                    component.definition['name'] = aname
-                    component.fields[1]['name']=aname
+                    component.setName( aname )
                     # get documentation
                     try:
                         component.documentation = self.documentation.components[aname]
@@ -393,6 +398,22 @@ class SchLib(object):
             self.documentation.add(component.name, component.documentation)
             for alias in component.aliases.keys():
                 self.documentation.add(alias, component.aliases[alias])
+
+    # set or add the documentation of a component
+    def addDocumentation(self, component, description, keys='', datasheet=''):
+        doc=OrderedDict(
+            [('description', description), ('keywords', keys), ('datasheet', datasheet)])
+        self.documentation.add(component, doc)
+        return doc;
+
+
+    # add an alias with documentation to a component, also adds the documentation!
+    def addAlias(self, component, alias, description='', keys='', datasheet=''):
+        self.removeComponentOrAlias(alias)
+        doc=self.addDocumentation(alias, description, keys, datasheet)
+        c=self.getComponentByNameOrAlias(component)
+        c.aliases[alias]=doc
+        
 
     def save(self, filename=None):
         if not self.validFile: return False
