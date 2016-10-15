@@ -20,6 +20,7 @@ def readLIBDefinition(libdef_fn):
     component_templates = []
     comp = {}
     unit = {}
+    last_alias=''
     for line_in in libdef:
         line = line_in.strip()
         
@@ -41,12 +42,68 @@ def readLIBDefinition(libdef_fn):
                 comp = {}
                 comp['name'] = match.group(1)
                 comp['units'] = []
-            
-            # parse '$ALIAS <AL1> <AL2> ...'
-            match = re.match(r'\$ALIAS\s*((\w+)\s*)+\s*', line, re.IGNORECASE)
+
+            # parse '$DESC <TEXT>'
+            match = re.match(r'\$DESC\s+(.*)', line, re.IGNORECASE)
             if match:
-                comp['alias'] = match.groups()
-            
+                comp['description'] = match.group(1)
+
+            # parse '$KEYS <TEXT>'
+            match = re.match(r'\$KEYS\s+(.*)', line, re.IGNORECASE)
+            if match:
+                comp['keys'] = match.group(1)
+
+            # parse '$DATASHEET <TEXT>'
+            match = re.match(r'\$DATASHEET\s+(.*)', line, re.IGNORECASE)
+            if match:
+                comp['datasheet'] = match.group(1)
+
+            # parse '$ALIAS <AL1> <AL2> ...'
+            match = re.match(r'\$ALIAS\s*(?:(\w+)\s*)+\s*', line, re.IGNORECASE)
+            if match:
+                if comp.get('alias', None)==None:
+                    comp['alias']=[]
+                for a in match.groups():
+                    comp['alias'].append(a)
+                    if comp.get('alias_description', None) == None: comp['alias_description'] = []
+                    if comp.get('alias_keys', None) == None: comp['alias_keys'] = []
+                    if comp.get('alias_datasheet', None) == None: comp['alias_datasheet'] = []
+                    comp['alias_description'].append(comp.get('description', ''))
+                    comp['alias_keys'].append(comp.get('keys', ''))
+                    comp['alias_datasheet'].append(comp.get('datasheet',''))
+                    last_alias=a
+
+            # parse '$ADESC <TEXT>'
+            match = re.match(r'\$ADESC\s+(.*)', line, re.IGNORECASE)
+            if match:
+                if len(last_alias) > 0: comp['alias_description'][-1] = match.group(1)
+
+            # parse '$ADESCADD <TEXT>'
+            match = re.match(r'\$ADESCADD\s+(.*)', line, re.IGNORECASE)
+            if match:
+                a=match.group(1)
+                if len(a)>0:
+                    if a[0].isalnum(): a=', '+a
+                    if len(last_alias) > 0: comp['alias_description'][-1] = comp.get('description', '')+a
+
+            # parse '$AKEYS <TEXT>'
+            match = re.match(r'\$AKEYS\s+(.*)', line, re.IGNORECASE)
+            if match:
+                if len(last_alias) > 0: comp['alias_keys'][-1] = match.group(1)
+
+            # parse '$AKEYSADD <TEXT>'
+            match = re.match(r'\$AKEYSADD\s+(.*)', line, re.IGNORECASE)
+            if match:
+                a=match.group(1)
+                if len(a)>0:
+                    if a[0].isalnum(): a=' '+a
+                    if len(last_alias) > 0: comp['alias_keys'][-1] = comp.get('keys', '')+a
+
+            # parse '$ADATASHEET <TEXT>'
+            match = re.match(r'\$ADATASHEET\s+(.*)', line, re.IGNORECASE)
+            if match:
+                if len(last_alias) > 0: comp['alias_datasheet'][-1] = match.group(1)
+
             # parse '$FPLIST <FP1> <FP2> ...'
             match = re.match(r'\$FPLIST\s*(([^\s]+)\s*)+\s*', line, re.IGNORECASE)
             if match:
@@ -103,6 +160,14 @@ def readLIBDefinition(libdef_fn):
     return component_templates
 
 
+def implementComponent(lib, c):
+    # remove old component
+    lib.removeComponentOrAlias(c['name'])
+    for a in c['alias']: lib.removeComponentOrAlias(a)
+    
+    
+
+
 def main(libfilename, libdef_files, style):
     
     # read in style files
@@ -115,12 +180,17 @@ def main(libfilename, libdef_files, style):
     component_templates=[]
     for libdef_fn in libdef_files:
         print('READING COMPONENT DEFINITION FILE ', libdef_fn)
-        component_templates.append(readLIBDefinition(libdef_fn))
+        tl=readLIBDefinition(libdef_fn)
+        print(tl)
+        component_templates.append(tl)
 
     #open library
     print ('OPENING LIBRARY FILE ', libfilename)
     lib = SchLib(libfilename)
-
+    
+    #implement components
+    for c in component_templates:
+        implementComponent(lib, c)
 
     # finally save the lib
     print('SAVING LIBRARY FILE ', libfilename)
@@ -138,4 +208,4 @@ def main(libfilename, libdef_files, style):
 
 if __name__ == "__main__":
     # execute only if run as a script
-    main("test.lib", [ os.path.join(os.getcwd(), 'symbol_generator_data', 'lib_def', 'logic_gates.txt')],  "ANSI")
+    main("74xx.lib", [ os.path.join(os.getcwd(), 'symbol_generator_data', 'lib_def', 'logic_gates.txt')],  "ANSI")

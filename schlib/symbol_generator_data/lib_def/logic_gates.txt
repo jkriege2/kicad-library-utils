@@ -1,6 +1,25 @@
+###########################
 # 74x00, 4x NAND2
+###########################
 $CMP 7400
-$ALIAS 74LS00 74HC00 74HCT00
+$DESC Quad NAND 2-input gates
+$KEYS TTL nand2
+$DATASHEET http://www.ti.com/lit/ds/symlink/sn7400.pdf
+#-----
+$ALIAS 74LS00
+$ADESC Quad NAND 2-input gates, Low power Schottky high speed
+$AKEYS TTL nand2 LS-family
+#-----
+$ALIAS 74HC00 
+$ADESCADD , high speed CMOS (HC)
+$AKEYSADD HC-family
+$ADATASHEET http://www.nxp.com/documents/data_sheet/74HC_HCT00.pdf
+#-----
+$ALIAS 74HCT00
+$ADESCADD , high speed CMOS (HCT)
+$AKEYSADD HCT-family
+$ADATASHEET http://www.nxp.com/documents/data_sheet/74HC_HCT00.pdf
+#-----
 $FPLIST DIP?14* SO?14*
 ?UNITS 4 NAND2
 1 I1.1   4 I2.1   10 I3.1   13 I4.1
@@ -13,6 +32,7 @@ $ENDCMP
 
 # 74x08, 4x AND2
 $CMP 7408
+$DESC "Quad 2-input AND gates"
 $ALIAS 74LS08 74HC08 74HCT08
 $FPLIST DIP?14* SO?14*
 ?UNITS 4 AND2
