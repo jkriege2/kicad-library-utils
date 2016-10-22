@@ -1,7 +1,7 @@
 ###########################
 # 74x00, 4x NAND2
 ###########################
-$CMP 7400
+$CMP 7400 U
 $DESC Quad NAND 2-input gates
 $KEYS TTL nand2
 $DATASHEET http://www.ti.com/lit/ds/symlink/sn7400.pdf
@@ -31,7 +31,7 @@ $FPLIST DIP?14* SO?14*
 $ENDCMP
 
 # 74x08, 4x AND2
-$CMP 7408
+$CMP 7408 U
 $DESC "Quad 2-input AND gates"
 $ALIAS 74LS08 74HC08 74HCT08
 $FPLIST DIP?14* SO?14*

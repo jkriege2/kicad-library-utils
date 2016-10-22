@@ -122,6 +122,37 @@ class Component(object):
 
     _KEYS = {'DEF':_DEF_KEYS, 'F0':_F0_KEYS, 'F':_FN_KEYS,
              'A':_ARC_KEYS, 'C':_CIRCLE_KEYS, 'P':_POLY_KEYS, 'S':_RECT_KEYS, 'T':_TEXT_KEYS, 'X':_PIN_KEYS}
+
+    def __init__(self, other):
+        self.comments = other.components
+        self.fplist = other.fplist
+        self.aliases = other.aliases
+        self.definition = other.definition
+        self.definition = other.definition
+        self.draw = other.draw
+        self.drawOrdered = other.drawOrdered
+        self.fields = other.fields
+        self.checksum = other.checksum
+        self.name = other.name
+        self.reference = other.reference
+        self.pins = other.pins
+        self.documentation = other.documentation
+    
+
+    def __init__(self, name, ref, unit_count, text_offset, draw_pinnumber, draw_pinname, units_locked, option_flag):
+        self.comments = '#\n# '+name+'\n#\n'
+        self.fplist = []
+        self.aliases = []
+        self.definition = dict(zip(self._DEF_KEYS,[name,ref,'0',text_offset,draw_pinnumber,draw_pinname,unit_count,units_locked,option_flag))
+        self.clearDRAW()
+        self.fields = []
+        self.checksum = 0
+        self.name = name
+        self.reference = ref
+        self.pins = []
+        self.documentation = other.documentation
+
+    
     def __init__(self, data, comments, documentation):
         self.comments = comments
         self.fplist = []
@@ -229,6 +260,7 @@ class Component(object):
         # get documentation
         self.documentation = self.getDocumentation(documentation,self.name)
 
+
     def getDocumentation(self,documentation,name):
         try:
             return documentation.components[name]
@@ -261,13 +293,77 @@ class Component(object):
 
         return pins
 
-    def setName(self, name):
+    def setName(self, aname):
         self.name = aname
         self.definition['name'] = aname
         self.fields[1]['name'] = aname
         self.comments='# \n# '+aname+'\n# \n'
+        
+    # clear all drawing instructions
+    def clearDRAW(self):
+        self.draw = {
+            'arcs': [],
+            'circles': [],
+            'polylines': [],
+            'rectangles': [],
+            'texts': [],
+            'pins': []
+        }
+        self.drawOrdered = []
 
+    # import the drawing instructions from another component into this component
+    def importDRAW(selfself, otherComp, pinmapping=dict(), importOnlyUnitSpecific=False, makeAllUnitSpecific=False):
+        for type,lines in otherComp.draw:
+            for key in lines:
+                print(type, ':', key)
+#                if type == 'arcs':
+#                    self.draw['arcs'].append(keys)
+#                    self.drawOrdered.append(['A', self.draw['arcs'][-1]])
+#                if type == 'circles':
+#                    self.draw['circles'].append(keys)
+#                    self.drawOrdered.append(['C', self.draw['circles'][-1]])
+#                if type == 'polylines':
+#                    self.draw['polylines'].append(keys)
+#                    self.drawOrdered.append(['P', self.draw['polylines'][-1]])
+#                if type == 'rectangles':
+#                    self.draw['rectangles'].append(keys)
+#                    self.drawOrdered.append(['S', self.draw['rectangles'][-1]])
+#                if type == 'texts':
+#                    self.draw['texts'].append(keys)
+#                    self.drawOrdered.append(['T', self.draw['texts'][-1]])
+#                if type == 'pins':
+#                    if len(pinmapping)>0:
+#                        keys['num']=pinmapping.get(keys['num'],keys['num'])
+#                    self.draw['pins'].append(keys)
+#                    self.drawOrdered.append(['X', self.draw['pins'][-1]])
+        self.pins = self.draw['pins']
 
+    # import the drawing instructions from another component into this component
+    def importDRAW(selfself, otherComp, pinmapping=dict(), importOnlyUnitSpecific=False, makeAllUnitSpecific=False):
+        for type, lines in otherComp.draw:
+            for key in lines:
+                print(type, ':', key)
+                #                if type == 'arcs':
+                #                    self.draw['arcs'].append(keys)
+                #                    self.drawOrdered.append(['A', self.draw['arcs'][-1]])
+                #                if type == 'circles':
+                #                    self.draw['circles'].append(keys)
+                #                    self.drawOrdered.append(['C', self.draw['circles'][-1]])
+                #                if type == 'polylines':
+                #                    self.draw['polylines'].append(keys)
+                #                    self.drawOrdered.append(['P', self.draw['polylines'][-1]])
+                #                if type == 'rectangles':
+                #                    self.draw['rectangles'].append(keys)
+                #                    self.drawOrdered.append(['S', self.draw['rectangles'][-1]])
+                #                if type == 'texts':
+                #                    self.draw['texts'].append(keys)
+                #                    self.drawOrdered.append(['T', self.draw['texts'][-1]])
+                #                if type == 'pins':
+                #                    if len(pinmapping)>0:
+                #                        keys['num']=pinmapping.get(keys['num'],keys['num'])
+                #                    self.draw['pins'].append(keys)
+                #                    self.drawOrdered.append(['X', self.draw['pins'][-1]])
+        self.pins = self.draw['pins']
 
 class SchLib(object):
     """
@@ -398,6 +494,7 @@ class SchLib(object):
             self.documentation.add(component.name, component.documentation)
             for alias in component.aliases.keys():
                 self.documentation.add(alias, component.aliases[alias])
+
 
     # set or add the documentation of a component
     def addDocumentation(self, component, description, keys='', datasheet=''):

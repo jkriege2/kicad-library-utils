@@ -36,11 +36,17 @@ def readLIBDefinition(libdef_fn):
                 #    print(c, ':', comp[c])
                 component_templates.append(comp)
             
-            # parse '$CMP <NAME>'
-            match = re.match(r'\$CMP\s*(\w+)\s*', line, re.IGNORECASE)
+            # parse '$CMP <NAME> <REFDES>'
+            match = re.match(r'\$CMP\s+(\w+)\s+(\w+)\s*', line, re.IGNORECASE)
             if match:
                 comp = {}
                 comp['name'] = match.group(1)
+                comp['ref'] = match.group(2)
+                comp['text_offset'] = 10
+                comp['draw_pinnumber'] = 'Y'
+                comp['draw_pinname'] = 'Y'
+                comp['units_locked'] = 'L'
+                comp['option_flag'] = 'N'
                 comp['units'] = []
 
             # parse '$DESC <TEXT>'
@@ -160,10 +166,16 @@ def readLIBDefinition(libdef_fn):
     return component_templates
 
 
-def implementComponent(lib, c):
+def implementComponent(lib, c, style_units):
+    print('IMPLEMENTING', c['name'])
+    print('   - aliases:', c['alias'])
+    print('   - units:  ', c['units'])
     # remove old component
     lib.removeComponentOrAlias(c['name'])
     for a in c['alias']: lib.removeComponentOrAlias(a)
+    print(len(c['units']))
+    #comp=Component(style_units[c['name']].getComponentByName(c['name']))
+    #comp.clearDRAW()
     
     
 
@@ -182,7 +194,8 @@ def main(libfilename, libdef_files, style):
         print('READING COMPONENT DEFINITION FILE ', libdef_fn)
         tl=readLIBDefinition(libdef_fn)
         print(tl)
-        component_templates.append(tl)
+        for t in tl:
+            component_templates.append(t)
 
     #open library
     print ('OPENING LIBRARY FILE ', libfilename)
@@ -190,7 +203,7 @@ def main(libfilename, libdef_files, style):
     
     #implement components
     for c in component_templates:
-        implementComponent(lib, c)
+        implementComponent(lib, c, style_units)
 
     # finally save the lib
     print('SAVING LIBRARY FILE ', libfilename)
