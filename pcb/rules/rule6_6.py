@@ -164,6 +164,7 @@ class Rule(KLCRule):
         self.f_courtyard_lines = module.filterLines('F.CrtYd')
         self.b_courtyard_lines = module.filterLines('B.CrtYd')
 
+        self.overpads_and_bounds=self._getComponentAndPadBounds()
         self.crt_offset=self._calcCourtyardOffset()
         self.actual_crt_rectangle=self._getCrtRectangle()
         self.expected_crt_rectangle=self._calcCourtyardRectangle()
@@ -171,16 +172,14 @@ class Rule(KLCRule):
         if self.actual_crt_rectangle['width']*self.actual_crt_rectangle['width']>0 and self.expected_crt_rectangle['width']*self.expected_crt_rectangle['width']>0:
             crterrorbound=5e-2
             if math.fabs(self.actual_crt_rectangle['x']-self.expected_crt_rectangle['x'])>crterrorbound or math.fabs(self.actual_crt_rectangle['y']-self.expected_crt_rectangle['y'])>crterrorbound or math.fabs(self.actual_crt_rectangle['width']-self.expected_crt_rectangle['width'])>crterrorbound or math.fabs(self.actual_crt_rectangle['height']-self.expected_crt_rectangle['height'])>crterrorbound:
-                clearancemin=self.crt_offset-\
-                             min(self.expected_crt_rectangle['x']-self.actual_crt_rectangle['x'],\
-                                 self.expected_crt_rectangle['y']-self.actual_crt_rectangle['y'],\
-                                 self.expected_crt_rectangle['width']+self.expected_crt_rectangle['x']-self.actual_crt_rectangle['width']-self.actual_crt_rectangle['x'],\
-                                 self.expected_crt_rectangle['height']+self.expected_crt_rectangle['y']-self.actual_crt_rectangle['height']-self.actual_crt_rectangle['y'])
-                clearancemax=self.crt_offset-\
-                             max(self.expected_crt_rectangle['x']-self.actual_crt_rectangle['x'],\
-                                 self.expected_crt_rectangle['y']-self.actual_crt_rectangle['y'],\
-                                 self.expected_crt_rectangle['width']+self.expected_crt_rectangle['x']-self.actual_crt_rectangle['width']-self.actual_crt_rectangle['x'],\
-                                 self.expected_crt_rectangle['height']+self.expected_crt_rectangle['y']-self.actual_crt_rectangle['height']-self.actual_crt_rectangle['y'])
+                clearancemin=min(math.fabs(self.actual_crt_rectangle['x']-self.overpads_and_bounds['lower']['x']),\
+                                 math.fabs(self.actual_crt_rectangle['y']-self.overpads_and_bounds['lower']['y']),\
+                                 math.fabs(self.actual_crt_rectangle['width']+self.actual_crt_rectangle['x']-self.overpads_and_bounds['higher']['x']),\
+                                 math.fabs(self.actual_crt_rectangle['height']+self.actual_crt_rectangle['y']-self.overpads_and_bounds['higher']['y']))
+                clearancemax=max(math.fabs(self.actual_crt_rectangle['x']-self.overpads_and_bounds['lower']['x']),\
+                                 math.fabs(self.actual_crt_rectangle['y']-self.overpads_and_bounds['lower']['y']),\
+                                 math.fabs(self.actual_crt_rectangle['width']+self.actual_crt_rectangle['x']-self.overpads_and_bounds['higher']['x']),\
+                                 math.fabs(self.actual_crt_rectangle['height']+self.actual_crt_rectangle['y']-self.overpads_and_bounds['higher']['y']))
                 #self.verbose_message=self.verbose_message+"For this footprint a rectangular courtyard {0} was expected, but a courtyard rectangle {1} was found\n".format(self.expected_crt_rectangle,self.actual_crt_rectangle)
                 self.verbose_message=self.verbose_message+"A courtyard clearance in the range {1}...{2}mm was found, but {0}mm was expected.\nThe recommendet courtyard rectangle would be:\n    {3}mm.".format(self.crt_offset, round(min(clearancemin, clearancemax)*100)/100, round(max(clearancemin, clearancemax)*100)/100, self.expected_crt_rectangle)
                 Ok=True
