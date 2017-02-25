@@ -723,15 +723,19 @@ class KicadMod(object):
         higher_x = higher_y = -1.0E99
         x=[]
         for pad in self.pads:
-            x.append(_rotatePoint({'x': -pad['size']['x']/2, 'y': -pad['size']['y']/2}, pad['pos']['orientation']))
-            x.append(_rotatePoint({'x': +pad['size']['x']/2, 'y': -pad['size']['y']/2}, pad['pos']['orientation']))
-            x.append(_rotatePoint({'x': +pad['size']['x']/2, 'y': +pad['size']['y']/2}, pad['pos']['orientation']))
-            x.append(_rotatePoint({'x': -pad['size']['x']/2, 'y': +pad['size']['y']/2}, pad['pos']['orientation']))
+            offset={'x':0.0, 'y':0.0}
+            if 'drill' in pad:
+                if 'offset' in pad['drill']:
+                    offset=pad['drill']['offset']
+            x.append(_rotatePoint({'x': -pad['size']['x']/2+offset['x'], 'y': -pad['size']['y']/2+offset['y']}, pad['pos']['orientation']))
+            x.append(_rotatePoint({'x': +pad['size']['x']/2+offset['x'], 'y': -pad['size']['y']/2+offset['y']}, pad['pos']['orientation']))
+            x.append(_rotatePoint({'x': +pad['size']['x']/2+offset['x'], 'y': +pad['size']['y']/2+offset['y']}, pad['pos']['orientation']))
+            x.append(_rotatePoint({'x': -pad['size']['x']/2+offset['x'], 'y': +pad['size']['y']/2+offset['y']}, pad['pos']['orientation']))
             if len(pad['drill'])>0 and len(pad['drill']['size'])>0:
-                x.append(_rotatePoint({'x': -pad['drill']['size']['x']/2, 'y': -pad['drill']['size']['y']/2}, pad['pos']['orientation']))
-                x.append(_rotatePoint({'x': +pad['drill']['size']['x']/2, 'y': -pad['drill']['size']['y']/2}, pad['pos']['orientation']))
-                x.append(_rotatePoint({'x': +pad['drill']['size']['x']/2, 'y': +pad['drill']['size']['y']/2}, pad['pos']['orientation']))
-                x.append(_rotatePoint({'x': -pad['drill']['size']['x']/2, 'y': +pad['drill']['size']['y']/2}, pad['pos']['orientation']))
+                x.append(_rotatePoint({'x': -pad['drill']['size']['x']/2+offset['x'], 'y': -pad['drill']['size']['y']/2+offset['y']}, pad['pos']['orientation']))
+                x.append(_rotatePoint({'x': +pad['drill']['size']['x']/2+offset['x'], 'y': -pad['drill']['size']['y']/2+offset['y']}, pad['pos']['orientation']))
+                x.append(_rotatePoint({'x': +pad['drill']['size']['x']/2+offset['x'], 'y': +pad['drill']['size']['y']/2+offset['y']}, pad['pos']['orientation']))
+                x.append(_rotatePoint({'x': -pad['drill']['size']['x']/2+offset['x'], 'y': +pad['drill']['size']['y']/2+offset['y']}, pad['pos']['orientation']))
             for ix in x:
                 lower_x=min(lower_x, ix['x']+pad['pos']['x'])
                 higher_x=max(higher_x, ix['x']+pad['pos']['x'])
