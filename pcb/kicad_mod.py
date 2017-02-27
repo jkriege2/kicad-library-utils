@@ -726,7 +726,8 @@ class KicadMod(object):
             offset={'x':0.0, 'y':0.0}
             if 'drill' in pad:
                 if 'offset' in pad['drill']:
-                    offset=pad['drill']['offset']
+                    if 'x' in pad['drill']['offset']:
+                        offset=pad['drill']['offset']
             x.append(_rotatePoint({'x': -pad['size']['x']/2+offset['x'], 'y': -pad['size']['y']/2+offset['y']}, pad['pos']['orientation']))
             x.append(_rotatePoint({'x': +pad['size']['x']/2+offset['x'], 'y': -pad['size']['y']/2+offset['y']}, pad['pos']['orientation']))
             x.append(_rotatePoint({'x': +pad['size']['x']/2+offset['x'], 'y': +pad['size']['y']/2+offset['y']}, pad['pos']['orientation']))
